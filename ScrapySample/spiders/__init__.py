@@ -20,7 +20,6 @@ class QuotesSpider(scrapy.Spider):
             yield scrapy.Request(url=url, callback=self.parse)
 
     def parse(self, response):
-        # hxs = Selector(response)
         courses = response.xpath('//div[@class="col-md-8"]/div[@class="quote"]')
 
         for course in courses:
@@ -37,8 +36,7 @@ class QuotesSpider(scrapy.Spider):
                 yield request
 
         # request next page
-        next_page = response.xpath('.//li[@class="next"]/a/@href').extract_first()
-        next_page_request = self.requestNextPage(next_page)
+        next_page_request = self.requestNextPage(response)
         yield next_page_request
 
     def authorParse(self, response):
@@ -55,7 +53,8 @@ class QuotesSpider(scrapy.Spider):
         item['author'] = author_item
         yield item
 
-    def requestNextPage(self,next_page):
+    def requestNextPage(self, response):
+        next_page = response.xpath('.//li[@class="next"]/a/@href').extract_first()
         if next_page is not None:
             if next_page != '':
                 return scrapy.Request(url='http://quotes.toscrape.com/'+next_page, callback=self.parse)
